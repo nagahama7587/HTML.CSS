@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>江戸川乱歩の本</title>
+
+    <!-- Tailwind CSS（独自カラーを登録。bg-pink-main/80 のような透明度指定も使えるようにする） -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'pink-main': '#f8b3db',
+                        'header-yellow': '#fce793',
+                        'circle-yellow': '#fce793'
+                    }
+                }
+            }
+        };
+    </script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Shippori Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+            background-color: #f8b3db;
+        }
+        .book-card {
+            transition: transform 0.25s ease;
+            background: none;
+            border: 0;
+            padding: 0;
+        }
+        .book-card:hover, .book-card:focus-visible {
+            transform: translateY(-8px) scale(1.02);
+        }
+        .book-card:focus-visible {
+            outline: 3px solid #111;
+            outline-offset: 6px;
+            border-radius: 6px;
+        }
+        .modal-blur { backdrop-filter: blur(4px); }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #e281b9; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #c95698; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+
+    <!-- Header -->
+    <header class="bg-header-yellow px-4 sm:px-8 py-4 relative flex items-center justify-center md:justify-between shadow-md sticky top-0 z-30">
+        <h1 class="text-xl sm:text-3xl font-extrabold tracking-wide text-gray-900">
+            <a href="#" class="flex items-center gap-2">江戸川乱歩の本</a>
+        </h1>
+
+        <!-- ハンバーガーボタン（スマホ幅のみ） -->
+        <button type="button" id="menu-btn" onclick="openMenu()" class="absolute right-4 top-1/2 -translate-y-1/2 md:hidden text-gray-900 text-2xl p-1" aria-label="メニューを開く" aria-expanded="false" aria-controls="side-menu-panel">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <!-- PC幅のナビ -->
+        <div class="hidden md:flex items-center space-x-6 text-base font-bold text-gray-800">
+            <button type="button" onclick="openModal('favorites')" class="hover:text-red-600 transition flex items-center gap-1">
+                <i class="fa-regular fa-heart"></i>
+                <span>お気に入り</span>
+                <span class="fav-badge ml-1 bg-black text-white text-xs px-2 py-0.5 rounded-full hidden">0</span>
+            </button>
+            <button type="button" onclick="openModal('history')" class="hover:text-amber-800 transition flex items-center gap-1">
+                <i class="fa-solid fa-download"></i>
+                <span>ダウンロード履歴</span>
+                <span class="dl-badge ml-1 bg-black text-white text-xs px-2 py-0.5 rounded-full hidden">0</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- サイドメニュー（スマホ幅のみ・右からスライド） -->
+    <div id="side-menu" class="fixed inset-0 z-40 md:hidden pointer-events-none" aria-hidden="true">
+        <div id="side-menu-overlay" class="absolute inset-0 bg-black/40 opacity-0 transition-opacity duration-300" onclick="closeMenu()"></div>
+        <nav id="side-menu-panel" class="absolute top-0 right-0 h-full w-3/5 max-w-xs bg-header-yellow shadow-2xl translate-x-full transition-transform duration-300 px-6 py-4 flex flex-col" aria-label="メニュー">
+            <div class="flex justify-end mb-6">
+                <button type="button" onclick="closeMenu()" class="text-gray-900 text-2xl p-1" aria-label="メニューを閉じる">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+            </div>
+            <ul class="space-y-1 text-gray-900 text-base">
+                <li>
+                    <button type="button" onclick="openModalFromMenu('favorites')" class="w-full text-left py-3 flex items-center gap-2">
+                        お気に入り
+                        <span class="fav-badge bg-black text-white text-xs px-2 py-0.5 rounded-full hidden">0</span>
+                    </button>
+                </li>
+                <li>
+                    <button type="button" onclick="openModalFromMenu('history')" class="w-full text-left py-3 flex items-center gap-2">
+                        ダウンロード履歴
+                        <span class="dl-badge bg-black text-white text-xs px-2 py-0.5 rounded-full hidden">0</span>
+                    </button>
+                </li>
+                <li>
+                    <a href="https://x.com" target="_blank" rel="noopener noreferrer" class="py-3 flex items-center gap-2">
+                        <i class="fa-brands fa-x-twitter text-lg"></i><span>X</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="py-3 flex items-center gap-2">
+                        <i class="fa-brands fa-facebook text-lg"></i><span>Facebook</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="py-3 flex items-center gap-2">
+                        <i class="fa-brands fa-instagram text-lg"></i><span>インスタグラム</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <main class="flex-grow">
+
+        <!-- HOME VIEW -->
+        <div id="view-home" class="view-panel">
+            <!-- Hero -->
+            <div class="bg-pink-main">
+                <div class="w-full overflow-hidden relative">
+                    <img src="../image/正面画像.jpeg"
+                        alt="江戸川乱歩の世界"
+                        class="block w-full h-auto object-cover max-h-[85vh]"
+                        onerror="this.onerror=null; this.src='https://placehold.co/1200x600/fce793/222222?text=%E6%B1%9F%E6%88%B8%E5%B7%9D%E4%B9%B1%E6%AD%A9%E3%81%AE%E4%B8%96%E7%95%8C';">
+                   <div class="absolute inset-2 sm:inset-4 border-2 sm:border-4 border-black pointer-events-none rounded"></div>
+            </div>
+        </div>
+
+            <!-- Books Section 1 -->
+            <section class="bg-pink-main px-4 sm:px-12 py-8 border-t border-pink-300">
+                <div id="book-grid" class="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 justify-items-center"></div>
+            </section>
+
+            <!-- お勧め本 -->
+            <section class="bg-pink-main py-16 px-4 relative overflow-hidden flex justify-center items-center">
+                <div class="relative w-full max-w-lg flex flex-col items-center justify-center">
+                    <div class="w-72 h-72 sm:w-80 sm:h-80 bg-circle-yellow rounded-full absolute -top-12 sm:-top-16 flex justify-center pt-8 z-0 shadow-inner">
+                        <span class="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-widest">お勧め本</span>
+                    </div>
+                    <div class="w-72 h-72 sm:w-80 sm:h-80 bg-circle-yellow rounded-full absolute top-24 left-4 sm:left-12 z-0 opacity-90"></div>
+                    <div id="recommended" class="z-10 my-16 flex flex-col items-center"></div>
+                </div>
+            </section>
+        </div>
+
+        <!-- BOOK DETAIL VIEW -->
+        <div id="view-detail" class="view-panel hidden bg-pink-main min-h-[80vh] py-12 px-4">
+            <div class="max-w-xl w-full mx-auto bg-pink-main/90 p-8 rounded-2xl relative border-2 border-pink-300 shadow-xl flex flex-col items-center">
+
+                <a href="#" class="absolute top-4 left-4 text-gray-700 hover:text-black font-bold flex items-center gap-1 text-sm bg-white/50 px-3 py-1.5 rounded-full transition">
+                    <i class="fa-solid fa-arrow-left"></i> 一覧に戻る
+                </a>
+
+                <div class="w-full flex justify-end mb-4 mt-8 sm:mt-0">
+                    <button type="button" onclick="toggleFavoriteCurrent()" class="text-gray-800 hover:scale-110 transition flex items-center gap-2 text-lg font-bold bg-white/30 px-3 py-1 rounded-full">
+                        <i id="detail-fav-heart" class="fa-regular fa-heart text-2xl"></i>
+                        <span>お気に入り</span>
+                    </button>
+                </div>
+
+                <div id="detail-book-svg-container" class="w-56 h-80 my-4 drop-shadow-2xl"></div>
+
+                <h2 id="detail-book-title" class="text-3xl font-extrabold text-gray-900 my-4 tracking-widest"></h2>
+
+                <button type="button" id="detail-download-btn" onclick="downloadCurrentBook()">
+                    <i id="detail-dl-icon" class="fa-solid fa-download"></i>
+                    <span id="detail-dl-text">ダウンロード</span>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-header-yellow py-6 px-8 border-t border-amber-200">
+        <div class="max-w-4xl mx-auto flex flex-wrap justify-around items-center gap-6 text-base font-bold text-gray-800">
+            <a href="https://x.com" target="_blank" rel="noopener noreferrer" class="hover:opacity-75 transition flex items-center gap-2">
+                <i class="fa-brands fa-x-twitter text-xl"></i><span>X</span>
+            </a>
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="hover:opacity-75 transition flex items-center gap-2">
+                <i class="fa-brands fa-facebook text-xl"></i><span>Facebook</span>
+            </a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="hover:opacity-75 transition flex items-center gap-2">
+                <i class="fa-brands fa-instagram text-xl"></i><span>インスタグラム</span>
+            </a>
+        </div>
+    </footer>
+
+    <!-- MODAL: お気に入り -->
+    <div id="modal-favorites" class="fixed inset-0 z-50 hidden bg-black/60 modal-blur justify-center items-center p-4" onclick="if(event.target===this) closeModal('favorites')">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative max-h-[85vh] flex flex-col">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-xl font-bold flex items-center gap-2 text-gray-900">
+                    <i class="fa-solid fa-heart text-black"></i> お気に入り一覧
+                </h3>
+                <button type="button" onclick="closeModal('favorites')" class="text-gray-400 hover:text-gray-600 text-2xl font-bold" aria-label="閉じる">&times;</button>
+            </div>
+            <div id="favorites-list-container" class="overflow-y-auto flex-grow space-y-3 pr-1"></div>
+        </div>
+    </div>
+
+    <!-- MODAL: ダウンロード履歴 -->
+    <div id="modal-history" class="fixed inset-0 z-50 hidden bg-black/60 modal-blur justify-center items-center p-4" onclick="if(event.target===this) closeModal('history')">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative max-h-[85vh] flex flex-col">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-xl font-bold flex items-center gap-2 text-gray-900">
+                    <i class="fa-solid fa-download text-amber-700"></i> ダウンロード履歴
+                </h3>
+                <button type="button" onclick="closeModal('history')" class="text-gray-400 hover:text-gray-600 text-2xl font-bold" aria-label="閉じる">&times;</button>
+            </div>
+            <div id="history-list-container" class="overflow-y-auto flex-grow space-y-3 pr-1"></div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-8 right-8 bg-gray-900 text-white px-5 py-3 rounded-xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 z-50 flex items-center gap-3">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-green-400 text-xl"></i>
+        <span id="toast-msg" class="font-bold"></span>
+    </div>
+
+    <script>
+        // ====== 本のデータ ======
+        // file: 実際の本のファイルを置いた場合はパスを入れてください（例: 'books/鏡地獄.txt' や 'books/鏡地獄.pdf'）。
+        //       空のままだと、タイトル入りのテキストファイルが自動生成されてダウンロードされます。
+        const booksData = {
+            red_beetle:    { id: 'red_beetle',    title: '赤いカブトムシ', color: '#8B0000', textColor: '#ffffff', file: '../books/akaikabutomusi.txt' },
+            demon_crest:   { id: 'demon_crest',   title: '悪魔の紋章',     color: '#0A3161', textColor: '#ffffff', file: '../books/akumano_monsho.txt' },
+            evil_spirit:   { id: 'evil_spirit',   title: '悪霊',           color: '#C59B27', textColor: '#111111', file: '../books/akuryo.txt' },
+            space_phantom: { id: 'space_phantom', title: '宇宙怪人',       color: '#005A36', textColor: '#ffffff', file: '../books/uchu_kaijin.txt' },
+            forty_faces:   { id: 'forty_faces',   title: '怪奇四十面相',   color: '#8B0000', textColor: '#ffffff', file: '../books/kaiki_yonju_menso.txt' },
+            sea_magician:  { id: 'sea_magician',  title: '海底の魔術師',   color: '#0A3161', textColor: '#ffffff', file: '../books/kaiteino_majutsushi.txt' },
+            mirror_hell:   { id: 'mirror_hell',   title: '鏡地獄',         color: '#C59B27', textColor: '#111111', file: '../books/kagami_jigoku.txt' },
+            masked_king:   { id: 'masked_king',   title: '仮面の恐怖王',   color: '#005A36', textColor: '#ffffff', file: '../books/kamenno_kyofuo.txt' },
+            vampire:       { id: 'vampire',       title: '吸血鬼',         color: '#8B0000', textColor: '#ffffff', file: '../books/kyuketsuki.txt' },
+            black_lizard:  { id: 'black_lizard',  title: '黒蜥蜴',         color: '#0A3161', textColor: '#ffffff', file: '../books/kurotokage.txt' }
+        };
+
+        const BOOK_LIST = ['red_beetle', 'demon_crest', 'evil_spirit', 'space_phantom', 'forty_faces', 'sea_magician', 'mirror_hell', 'masked_king', 'vampire'];
+        const RECOMMENDED = 'black_lizard';
+
+        // ====== 状態 ======
+        function loadList(key) {
+            try {
+                const v = JSON.parse(localStorage.getItem(key));
+                return Array.isArray(v) ? v : [];
+            } catch (e) {
+                return [];
+            }
+        }
+        function saveList(key, value) {
+            try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* 保存できない環境では無視 */ }
+        }
+
+        let favorites = loadList('ranpo_favs').filter(id => booksData[id]);
+        let downloads = loadList('ranpo_dls').filter(item => item && booksData[item.id]);
+        let currentBookId = null;
+
+        const DL_BTN_BASE = "mt-6 w-full max-w-xs text-white font-bold py-3 px-6 rounded-lg shadow-md active:scale-95 transition flex justify-center items-center gap-2 text-lg ";
+
+        // ====== 表紙SVG ======
+        function generateBookSVG(book, fontSize = 16) {
+            const borderColor = book.textColor === '#111111' ? '#333333' : '#ffd700';
+            return `
+                <svg viewBox="0 0 160 220" class="w-full h-full" role="img" aria-label="${book.title}">
+                    <rect x="5" y="5" width="145" height="210" rx="4" fill="${book.color}" stroke="${borderColor}" stroke-width="2"/>
+                    <rect x="12" y="12" width="131" height="196" fill="none" stroke="#ffd700" stroke-width="1.5"/>
+                    <rect x="150" y="8" width="8" height="204" fill="#e8d5b7" rx="1"/>
+                    <text x="77" y="115" font-family="'Shippori Mincho', serif" font-size="${fontSize}" fill="${book.textColor}" font-weight="bold" text-anchor="middle">${book.title}</text>
+                </svg>`;
+        }
+
+        // 一覧の本カード（クリックで詳細ページへ遷移）
+        function bookCardHTML(book, large = false) {
+            const size = large ? 'w-52 h-72' : 'w-48 h-64';
+            const label = large
+                ? 'mt-4 font-extrabold text-2xl text-gray-900 tracking-widest px-4 py-1'
+                : 'mt-3 font-bold text-lg text-gray-900 tracking-wider';
+            return `
+                <button type="button" onclick="goToBook('${book.id}')" class="book-card cursor-pointer flex flex-col items-center" aria-label="${book.title}の詳細を見る">
+                    <div class="${size} drop-shadow-xl">${generateBookSVG(book, large ? 18 : 16)}</div>
+                    <span class="${label}">${book.title}</span>
+                </button>`;
+        }
+
+        function renderHome() {
+            document.getElementById('book-grid').innerHTML = BOOK_LIST.map(id => bookCardHTML(booksData[id])).join('');
+            document.getElementById('recommended').innerHTML = bookCardHTML(booksData[RECOMMENDED], true);
+        }
+
+        // ====== 画面遷移（URLのハッシュで管理：ブラウザの戻る/進むも動きます） ======
+        function goToBook(id) {
+            location.hash = 'book-' + id;
+        }
+
+        function route() {
+            const hash = location.hash.replace('#', '');
+            const match = hash.match(/^book-(.+)$/);
+            if (match && booksData[match[1]]) {
+                showBookDetail(match[1]);
+            } else {
+                showView('home');
+            }
+        }
+
+        function showView(name) {
+            document.querySelectorAll('.view-panel').forEach(el => el.classList.add('hidden'));
+            document.getElementById('view-' + name).classList.remove('hidden');
+            window.scrollTo({ top: 0 });
+        }
+
+        function showBookDetail(bookId) {
+            currentBookId = bookId;
+            const book = booksData[bookId];
+            document.getElementById('detail-book-title').textContent = book.title;
+            document.getElementById('detail-book-svg-container').innerHTML = generateBookSVG(book, 18);
+            updateDetailFavoriteUI();
+            updateDetailDownloadUI();
+            showView('detail');
+        }
+
+        // ====== お気に入り ======
+        function updateDetailFavoriteUI() {
+            const heart = document.getElementById('detail-fav-heart');
+            heart.className = favorites.includes(currentBookId)
+                ? 'fa-solid fa-heart text-2xl text-black'
+                : 'fa-regular fa-heart text-2xl text-gray-800';
+        }
+
+        function toggleFavoriteCurrent() {
+            if (!currentBookId) return;
+            const title = booksData[currentBookId].title;
+            const index = favorites.indexOf(currentBookId);
+            if (index > -1) {
+                favorites.splice(index, 1);
+                showToast(`「${title}」をお気に入りから削除しました`, 'fa-heart');
+            } else {
+                favorites.push(currentBookId);
+                showToast(`「${title}」をお気に入りに追加しました`, 'fa-heart');
+            }
+            saveList('ranpo_favs', favorites);
+            updateDetailFavoriteUI();
+            updateBadges();
+        }
+
+        function removeFavorite(id) {
+            favorites = favorites.filter(f => f !== id);
+            saveList('ranpo_favs', favorites);
+            renderFavoritesList();
+            updateBadges();
+            if (currentBookId === id) updateDetailFavoriteUI();
+        }
+
+        // ====== ダウンロード ======
+        function updateDetailDownloadUI() {
+            const done = downloads.some(item => item.id === currentBookId);
+            const btn = document.getElementById('detail-download-btn');
+            const icon = document.getElementById('detail-dl-icon');
+            const text = document.getElementById('detail-dl-text');
+            if (done) {
+                btn.className = DL_BTN_BASE + 'bg-emerald-700 hover:bg-emerald-800';
+                icon.className = 'fa-solid fa-circle-check';
+                text.textContent = 'ダウンロード済み（もう一度保存）';
+            } else {
+                btn.className = DL_BTN_BASE + 'bg-gray-900 hover:bg-gray-800';
+                icon.className = 'fa-solid fa-download';
+                text.textContent = 'ダウンロード';
+            }
+        }
+
+        function triggerFileDownload(book) {
+            const a = document.createElement('a');
+            if (book.file) {
+                // 用意したファイルをダウンロード
+                a.href = book.file;
+                a.download = book.file.split('/').pop();
+            } else {
+                // ファイル未設定のときは、タイトル入りのテキストを生成して保存
+                const body = `${book.title}\n江戸川乱歩\n\n※ このファイルは仮のデータです。本文ファイルを用意して booksData の file に指定してください。\n`;
+                const blob = new Blob(['\ufeff' + body], { type: 'text/plain;charset=utf-8' });
+                a.href = URL.createObjectURL(blob);
+                a.download = `${book.title}.txt`;
+            }
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            if (!book.file) setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        }
+
+        function downloadCurrentBook() {
+            if (!currentBookId) return;
+            const book = booksData[currentBookId];
+
+            triggerFileDownload(book);
+
+            const date = new Date().toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+            downloads = downloads.filter(item => item.id !== currentBookId);
+            downloads.unshift({ id: currentBookId, title: book.title, date });
+            saveList('ranpo_dls', downloads);
+
+            showToast(`「${book.title}」をダウンロードしました`, 'fa-circle-check');
+            updateDetailDownloadUI();
+            updateBadges();
+        }
+
+        // ====== バッジ ======
+        function updateBadges() {
+            setBadges('.fav-badge', favorites.length);
+            setBadges('.dl-badge', downloads.length);
+        }
+
+        function setBadges(selector, count) {
+            document.querySelectorAll(selector).forEach(el => {
+                el.textContent = count;
+                el.classList.toggle('hidden', count === 0);
+            });
+        }
+
+        // ====== モーダル ======
+        function openModal(type) {
+            if (type === 'favorites') renderFavoritesList();
+            if (type === 'history') renderHistoryList();
+            const modal = document.getElementById('modal-' + type);
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal(type) {
+            const modal = document.getElementById('modal-' + type);
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') { closeModal('favorites'); closeModal('history'); closeMenu(); }
+        });
+
+        function openBookFromModal(type, id) {
+            closeModal(type);
+            goToBook(id);
+        }
+
+        function renderFavoritesList() {
+            const box = document.getElementById('favorites-list-container');
+            if (favorites.length === 0) {
+                box.innerHTML = '<p class="text-center text-gray-500 py-8 font-bold">お気に入りの本はありません。</p>';
+                return;
+            }
+            box.innerHTML = favorites.map(id => {
+                const book = booksData[id];
+                return `
+                    <div class="flex items-center justify-between p-3 bg-pink-50 hover:bg-pink-100 rounded-xl transition border border-pink-200">
+                        <div class="flex items-center gap-3 cursor-pointer flex-grow" onclick="openBookFromModal('favorites', '${book.id}')">
+                            <div class="w-10 h-14">${generateBookSVG(book, 14)}</div>
+                            <span class="font-bold text-gray-900">${book.title}</span>
+                        </div>
+                        <button type="button" onclick="removeFavorite('${book.id}')" class="text-red-500 hover:text-red-700 p-2" aria-label="お気に入りから削除">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>`;
+            }).join('');
+        }
+
+        function renderHistoryList() {
+            const box = document.getElementById('history-list-container');
+            if (downloads.length === 0) {
+                box.innerHTML = '<p class="text-center text-gray-500 py-8 font-bold">ダウンロード履歴はありません。</p>';
+                return;
+            }
+            box.innerHTML = downloads.map(item => {
+                const book = booksData[item.id];
+                return `
+                    <div class="flex items-center justify-between p-3 bg-amber-50 rounded-xl border border-amber-200">
+                        <div class="flex items-center gap-3 cursor-pointer" onclick="openBookFromModal('history', '${item.id}')">
+                            <div class="w-10 h-14">${generateBookSVG(book, 14)}</div>
+                            <div>
+                                <p class="font-bold text-gray-900">${book.title}</p>
+                                <p class="text-xs text-gray-500">${item.date}</p>
+                            </div>
+                        </div>
+                        <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full">保存済み</span>
+                    </div>`;
+            }).join('');
+        }
+
+        // ====== トースト ======
+        let toastTimer = null;
+        function showToast(message, iconClass = 'fa-circle-check') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').textContent = message;
+            document.getElementById('toast-icon').className = `fa-solid ${iconClass} text-green-400 text-xl`;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.add('opacity-0', 'pointer-events-none'), 2500);
+        }
+
+        // ====== ハンバーガーメニュー ======
+        function openMenu() {
+            const menu = document.getElementById('side-menu');
+            menu.classList.remove('pointer-events-none');
+            menu.setAttribute('aria-hidden', 'false');
+            document.getElementById('side-menu-overlay').classList.replace('opacity-0', 'opacity-100');
+            document.getElementById('side-menu-panel').classList.replace('translate-x-full', 'translate-x-0');
+            document.getElementById('menu-btn').setAttribute('aria-expanded', 'true');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMenu() {
+            const menu = document.getElementById('side-menu');
+            menu.classList.add('pointer-events-none');
+            menu.setAttribute('aria-hidden', 'true');
+            document.getElementById('side-menu-overlay').classList.replace('opacity-100', 'opacity-0');
+            document.getElementById('side-menu-panel').classList.replace('translate-x-0', 'translate-x-full');
+            document.getElementById('menu-btn').setAttribute('aria-expanded', 'false');
+            document.body.style.overflow = '';
+        }
+
+        function openModalFromMenu(type) {
+            closeMenu();
+            openModal(type);
+        }
+
+        // PC幅になったらメニューを閉じる
+        window.matchMedia('(min-width: 768px)').addEventListener('change', e => { if (e.matches) closeMenu(); });
+
+        // ====== 初期化 ======
+        document.addEventListener('DOMContentLoaded', () => {
+            renderHome();
+            updateBadges();
+            route();
+        });
+        window.addEventListener('hashchange', route);
+    </script>
+</body>
+</html>
