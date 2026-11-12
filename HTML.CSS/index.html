@@ -134,9 +134,9 @@
                         alt="江戸川乱歩の世界"
                         class="block w-full h-auto object-cover max-h-[85vh]"
                         onerror="this.onerror=null; this.src='https://placehold.co/1200x600/fce793/222222?text=%E6%B1%9F%E6%88%B8%E5%B7%9D%E4%B9%B1%E6%AD%A9%E3%81%AE%E4%B8%96%E7%95%8C';">
-                   <div class="absolute inset-2 sm:inset-4 border-2 sm:border-4 border-black pointer-events-none rounded"></div>
+                    <div class="absolute inset-2 sm:inset-4 border-2 sm:border-4 border-black pointer-events-none rounded"></div>
+                </div>
             </div>
-        </div>
 
             <!-- Books Section 1 -->
             <section class="bg-pink-main px-4 sm:px-12 py-8 border-t border-pink-300">
@@ -231,19 +231,19 @@
 
     <script>
         // ====== 本のデータ ======
-        // file: 実際の本のファイルを置いた場合はパスを入れてください（例: 'books/鏡地獄.txt' や 'books/鏡地獄.pdf'）。
+        // file: 本のファイルのパス（HTMLと同じ場所の books フォルダに置いてください）。
         //       空のままだと、タイトル入りのテキストファイルが自動生成されてダウンロードされます。
         const booksData = {
-            red_beetle:    { id: 'red_beetle',    title: '赤いカブトムシ', color: '#8B0000', textColor: '#ffffff', file: '../books/akaikabutomusi.txt' },
-            demon_crest:   { id: 'demon_crest',   title: '悪魔の紋章',     color: '#0A3161', textColor: '#ffffff', file: '../books/akumano_monsho.txt' },
-            evil_spirit:   { id: 'evil_spirit',   title: '悪霊',           color: '#C59B27', textColor: '#111111', file: '../books/akuryo.txt' },
-            space_phantom: { id: 'space_phantom', title: '宇宙怪人',       color: '#005A36', textColor: '#ffffff', file: '../books/uchu_kaijin.txt' },
-            forty_faces:   { id: 'forty_faces',   title: '怪奇四十面相',   color: '#8B0000', textColor: '#ffffff', file: '../books/kaiki_yonju_menso.txt' },
-            sea_magician:  { id: 'sea_magician',  title: '海底の魔術師',   color: '#0A3161', textColor: '#ffffff', file: '../books/kaiteino_majutsushi.txt' },
-            mirror_hell:   { id: 'mirror_hell',   title: '鏡地獄',         color: '#C59B27', textColor: '#111111', file: '../books/kagami_jigoku.txt' },
-            masked_king:   { id: 'masked_king',   title: '仮面の恐怖王',   color: '#005A36', textColor: '#ffffff', file: '../books/kamenno_kyofuo.txt' },
-            vampire:       { id: 'vampire',       title: '吸血鬼',         color: '#8B0000', textColor: '#ffffff', file: '../books/kyuketsuki.txt' },
-            black_lizard:  { id: 'black_lizard',  title: '黒蜥蜴',         color: '#0A3161', textColor: '#ffffff', file: '../books/kurotokage.txt' }
+            red_beetle:    { id: 'red_beetle',    title: '赤いカブトムシ', color: '#8B0000', textColor: '#ffffff', file: 'books/akaikabutomusi.txt' },
+            demon_crest:   { id: 'demon_crest',   title: '悪魔の紋章',     color: '#0A3161', textColor: '#ffffff', file: 'books/akumano_monsho.txt' },
+            evil_spirit:   { id: 'evil_spirit',   title: '悪霊',           color: '#C59B27', textColor: '#111111', file: 'books/akuryo.txt' },
+            space_phantom: { id: 'space_phantom', title: '宇宙怪人',       color: '#005A36', textColor: '#ffffff', file: 'books/uchu_kaijin.txt' },
+            forty_faces:   { id: 'forty_faces',   title: '怪奇四十面相',   color: '#8B0000', textColor: '#ffffff', file: 'books/kaiki_yonju_menso.txt' },
+            sea_magician:  { id: 'sea_magician',  title: '海底の魔術師',   color: '#0A3161', textColor: '#ffffff', file: 'books/kaiteino_majutsushi.txt' },
+            mirror_hell:   { id: 'mirror_hell',   title: '鏡地獄',         color: '#C59B27', textColor: '#111111', file: 'books/kagami_jigoku.txt' },
+            masked_king:   { id: 'masked_king',   title: '仮面の恐怖王',   color: '#005A36', textColor: '#ffffff', file: 'books/kamenno_kyofuo.txt' },
+            vampire:       { id: 'vampire',       title: '吸血鬼',         color: '#8B0000', textColor: '#ffffff', file: 'books/kyuketsuki.txt' },
+            black_lizard:  { id: 'black_lizard',  title: '黒蜥蜴',         color: '#0A3161', textColor: '#ffffff', file: 'books/kurotokage.txt' }
         };
 
         const BOOK_LIST = ['red_beetle', 'demon_crest', 'evil_spirit', 'space_phantom', 'forty_faces', 'sea_magician', 'mirror_hell', 'masked_king', 'vampire'];
@@ -378,30 +378,68 @@
             }
         }
 
-        function triggerFileDownload(book) {
+        // 実際に保存を始める小さな関数（<a download> をクリックするだけ）
+        function saveWithLink(href, filename) {
             const a = document.createElement('a');
-            if (book.file) {
-                // 用意したファイルをダウンロード
-                a.href = book.file;
-                a.download = book.file.split('/').pop();
-            } else {
-                // ファイル未設定のときは、タイトル入りのテキストを生成して保存
-                const body = `${book.title}\n江戸川乱歩\n\n※ このファイルは仮のデータです。本文ファイルを用意して booksData の file に指定してください。\n`;
-                const blob = new Blob(['\ufeff' + body], { type: 'text/plain;charset=utf-8' });
-                a.href = URL.createObjectURL(blob);
-                a.download = `${book.title}.txt`;
-            }
+            a.href = href;
+            a.download = filename;
+            a.style.display = 'none';
             document.body.appendChild(a);
             a.click();
             a.remove();
-            if (!book.file) setTimeout(() => URL.revokeObjectURL(a.href), 1000);
         }
 
-        function downloadCurrentBook() {
+        // ファイルを読み込んで「保存用データ」に変えてから保存する。
+        // こうすると、txt がブラウザ上に表示されてしまうのを防げます。
+        // ※ この関数はファイル内にこの1つだけ。同じ名前の関数を別の場所に書かないでください。
+        async function triggerFileDownload(book) {
+            // ファイル未設定のときは、タイトル入りのテキストを生成して保存
+            if (!book.file) {
+                const body = `${book.title}\n江戸川乱歩\n\n※ このファイルは仮のデータです。本文ファイルを用意して booksData の file に指定してください。\n`;
+                const blob = new Blob(['\ufeff' + body], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                saveWithLink(url, `${book.title}.txt`);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                return;
+            }
+
+            const ext = (book.file.split('.').pop() || 'txt').toLowerCase();
+            const filename = `${book.title}.${ext}`;
+
+            let blob = null;
+            try {
+                const res = await fetch(book.file);
+                if (!res.ok) {
+                    // サーバー上にファイルが無い（404など）
+                    throw new Error('file not found: ' + res.status);
+                }
+                blob = await res.blob();
+            } catch (e) {
+                // http(s) で開いているのに取得できない＝ファイルが無い・パスが違う
+                if (location.protocol.startsWith('http')) throw e;
+                // HTMLを直接開いている（file://）場合は fetch が使えないので、通常のリンクで保存を試す
+                saveWithLink(book.file, filename);
+                return;
+            }
+
+            // 種類を「ダウンロード用」に固定して、表示ではなく保存にさせる
+            const forced = new Blob([blob], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(forced);
+            saveWithLink(url, filename);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        async function downloadCurrentBook() {
             if (!currentBookId) return;
             const book = booksData[currentBookId];
 
-            triggerFileDownload(book);
+            try {
+                await triggerFileDownload(book);
+            } catch (e) {
+                console.error(e);
+                showToast(`「${book.title}」のファイルが見つかりません`, 'fa-circle-exclamation', false);
+                return; // 失敗したときは履歴に残さない
+            }
 
             const date = new Date().toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
             downloads = downloads.filter(item => item.id !== currentBookId);
@@ -495,13 +533,14 @@
 
         // ====== トースト ======
         let toastTimer = null;
-        function showToast(message, iconClass = 'fa-circle-check') {
+        function showToast(message, iconClass = 'fa-circle-check', ok = true) {
             const toast = document.getElementById('toast');
             document.getElementById('toast-msg').textContent = message;
-            document.getElementById('toast-icon').className = `fa-solid ${iconClass} text-green-400 text-xl`;
+            const color = ok ? 'text-green-400' : 'text-red-400';
+            document.getElementById('toast-icon').className = `fa-solid ${iconClass} ${color} text-xl`;
             toast.classList.remove('opacity-0', 'pointer-events-none');
             clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => toast.classList.add('opacity-0', 'pointer-events-none'), 2500);
+            toastTimer = setTimeout(() => toast.classList.add('opacity-0', 'pointer-events-none'), 3000);
         }
 
         // ====== ハンバーガーメニュー ======
