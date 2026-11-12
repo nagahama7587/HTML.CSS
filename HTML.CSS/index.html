@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>江戸川乱歩の本</title>
 
-    <!-- Tailwind CSS（独自カラーを登録。bg-pink-main/80 のような透明度指定も使えるようにする） -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -21,9 +20,7 @@
         };
     </script>
 
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&display=swap" rel="stylesheet">
@@ -33,20 +30,9 @@
             font-family: 'Shippori Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
             background-color: #f8b3db;
         }
-        .book-card {
-            transition: transform 0.25s ease;
-            background: none;
-            border: 0;
-            padding: 0;
-        }
-        .book-card:hover, .book-card:focus-visible {
-            transform: translateY(-8px) scale(1.02);
-        }
-        .book-card:focus-visible {
-            outline: 3px solid #111;
-            outline-offset: 6px;
-            border-radius: 6px;
-        }
+        .book-card { transition: transform 0.25s ease; background: none; border: 0; padding: 0; }
+        .book-card:hover, .book-card:focus-visible { transform: translateY(-8px) scale(1.02); }
+        .book-card:focus-visible { outline: 3px solid #111; outline-offset: 6px; border-radius: 6px; }
         .modal-blur { backdrop-filter: blur(4px); }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
@@ -56,18 +42,24 @@
 </head>
 <body class="min-h-screen flex flex-col antialiased">
 
+    <!-- ファイル不足の診断（足りないファイルがあるときだけ表示されます） -->
+    <div id="diag" class="hidden bg-red-700 text-white text-sm px-4 py-3 relative z-50">
+        <button type="button" onclick="document.getElementById('diag').classList.add('hidden')" class="absolute right-3 top-2 text-white text-xl" aria-label="閉じる">&times;</button>
+        <p class="font-bold mb-1">公開先に見つからないファイルがあります</p>
+        <p class="mb-2 text-red-100">下のファイルを、この index.html と同じフォルダの中（books / image フォルダ）にアップロードしてください。大文字・小文字も一致させる必要があります。</p>
+        <ul id="diag-list" class="list-disc pl-5 break-all space-y-0.5"></ul>
+    </div>
+
     <!-- Header -->
     <header class="bg-header-yellow px-4 sm:px-8 py-4 relative flex items-center justify-center md:justify-between shadow-md sticky top-0 z-30">
         <h1 class="text-xl sm:text-3xl font-extrabold tracking-wide text-gray-900">
             <a href="#" class="flex items-center gap-2">江戸川乱歩の本</a>
         </h1>
 
-        <!-- ハンバーガーボタン（スマホ幅のみ） -->
         <button type="button" id="menu-btn" onclick="openMenu()" class="absolute right-4 top-1/2 -translate-y-1/2 md:hidden text-gray-900 text-2xl p-1" aria-label="メニューを開く" aria-expanded="false" aria-controls="side-menu-panel">
             <i class="fa-solid fa-bars"></i>
         </button>
 
-        <!-- PC幅のナビ -->
         <div class="hidden md:flex items-center space-x-6 text-base font-bold text-gray-800">
             <button type="button" onclick="openModal('favorites')" class="hover:text-red-600 transition flex items-center gap-1">
                 <i class="fa-regular fa-heart"></i>
@@ -82,7 +74,7 @@
         </div>
     </header>
 
-    <!-- サイドメニュー（スマホ幅のみ・右からスライド） -->
+    <!-- サイドメニュー（スマホ幅のみ） -->
     <div id="side-menu" class="fixed inset-0 z-40 md:hidden pointer-events-none" aria-hidden="true">
         <div id="side-menu-overlay" class="absolute inset-0 bg-black/40 opacity-0 transition-opacity duration-300" onclick="closeMenu()"></div>
         <nav id="side-menu-panel" class="absolute top-0 right-0 h-full w-3/5 max-w-xs bg-header-yellow shadow-2xl translate-x-full transition-transform duration-300 px-6 py-4 flex flex-col" aria-label="メニュー">
@@ -127,10 +119,9 @@
 
         <!-- HOME VIEW -->
         <div id="view-home" class="view-panel">
-            <!-- Hero -->
             <div class="bg-pink-main">
                 <div class="w-full overflow-hidden relative">
-                    <img src="image/syoumenn.jpeg"
+                    <img id="hero-img" src="image/syoumenn.jpeg"
                         alt="江戸川乱歩の世界"
                         class="block w-full h-auto object-cover max-h-[85vh]"
                         onerror="this.onerror=null; this.src='https://placehold.co/1200x600/fce793/222222?text=%E6%B1%9F%E6%88%B8%E5%B7%9D%E4%B9%B1%E6%AD%A9%E3%81%AE%E4%B8%96%E7%95%8C';">
@@ -138,12 +129,10 @@
                 </div>
             </div>
 
-            <!-- Books Section 1 -->
             <section class="bg-pink-main px-4 sm:px-12 py-8 border-t border-pink-300">
                 <div id="book-grid" class="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 justify-items-center"></div>
             </section>
 
-            <!-- お勧め本 -->
             <section class="bg-pink-main py-16 px-4 relative overflow-hidden flex justify-center items-center">
                 <div class="relative w-full max-w-lg flex flex-col items-center justify-center">
                     <div class="w-72 h-72 sm:w-80 sm:h-80 bg-circle-yellow rounded-full absolute -top-12 sm:-top-16 flex justify-center pt-8 z-0 shadow-inner">
@@ -182,7 +171,6 @@
         </div>
     </main>
 
-    <!-- FOOTER -->
     <footer class="bg-header-yellow py-6 px-8 border-t border-amber-200">
         <div class="max-w-4xl mx-auto flex flex-wrap justify-around items-center gap-6 text-base font-bold text-gray-800">
             <a href="https://x.com" target="_blank" rel="noopener noreferrer" class="hover:opacity-75 transition flex items-center gap-2">
@@ -224,15 +212,20 @@
     </div>
 
     <!-- Toast -->
-    <div id="toast" class="fixed bottom-8 right-8 bg-gray-900 text-white px-5 py-3 rounded-xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 z-50 flex items-center gap-3">
+    <div id="toast" class="fixed bottom-8 right-8 left-8 sm:left-auto bg-gray-900 text-white px-5 py-3 rounded-xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 z-50 flex items-center gap-3">
         <i id="toast-icon" class="fa-solid fa-circle-check text-green-400 text-xl"></i>
-        <span id="toast-msg" class="font-bold"></span>
+        <span id="toast-msg" class="font-bold break-all"></span>
     </div>
 
     <script>
-        // ====== 本のデータ ======
-        // file: 本のファイルのパス（HTMLと同じ場所の books フォルダに置いてください）。
-        //       空のままだと、タイトル入りのテキストファイルが自動生成されてダウンロードされます。
+        // ====== 設定 ======
+        // 画像と本のファイルは、この index.html と「同じフォルダ」に置いたフォルダの中に入れてください。
+        //   index.html
+        //   image/syoumenn.jpeg
+        //   books/akaikabutomusi.txt ... など
+        // file を空 ('') にすると、タイトル入りの仮テキストが生成されて保存されます。
+        const HERO_IMAGE = 'image/syoumenn.jpeg';
+
         const booksData = {
             red_beetle:    { id: 'red_beetle',    title: '赤いカブトムシ', color: '#8B0000', textColor: '#ffffff', file: 'books/akaikabutomusi.txt' },
             demon_crest:   { id: 'demon_crest',   title: '悪魔の紋章',     color: '#0A3161', textColor: '#ffffff', file: 'books/akumano_monsho.txt' },
@@ -254,9 +247,7 @@
             try {
                 const v = JSON.parse(localStorage.getItem(key));
                 return Array.isArray(v) ? v : [];
-            } catch (e) {
-                return [];
-            }
+            } catch (e) { return []; }
         }
         function saveList(key, value) {
             try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* 保存できない環境では無視 */ }
@@ -267,6 +258,33 @@
         let currentBookId = null;
 
         const DL_BTN_BASE = "mt-6 w-full max-w-xs text-white font-bold py-3 px-6 rounded-lg shadow-md active:scale-95 transition flex justify-center items-center gap-2 text-lg ";
+
+        // ====== ファイルの存在チェック（公開先で見つからないファイルを画面に表示） ======
+        function absUrl(path) {
+            return new URL(path, location.href).href;
+        }
+
+        async function fileExists(path) {
+            try {
+                const res = await fetch(path, { method: 'HEAD', cache: 'no-store' });
+                return res.ok;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        async function checkFiles() {
+            // file:// で開いているときはブラウザの制限で確認できないので何もしない
+            if (!location.protocol.startsWith('http')) return;
+
+            const targets = [HERO_IMAGE, ...Object.values(booksData).map(b => b.file).filter(Boolean)];
+            const results = await Promise.all(targets.map(async p => ({ path: p, ok: await fileExists(p) })));
+            const missing = results.filter(r => !r.ok);
+            if (missing.length === 0) return;
+
+            document.getElementById('diag-list').innerHTML = missing.map(r => `<li>${absUrl(r.path)}</li>`).join('');
+            document.getElementById('diag').classList.remove('hidden');
+        }
 
         // ====== 表紙SVG ======
         function generateBookSVG(book, fontSize = 16) {
@@ -280,7 +298,6 @@
                 </svg>`;
         }
 
-        // 一覧の本カード（クリックで詳細ページへ遷移）
         function bookCardHTML(book, large = false) {
             const size = large ? 'w-52 h-72' : 'w-48 h-64';
             const label = large
@@ -298,7 +315,7 @@
             document.getElementById('recommended').innerHTML = bookCardHTML(booksData[RECOMMENDED], true);
         }
 
-        // ====== 画面遷移（URLのハッシュで管理：ブラウザの戻る/進むも動きます） ======
+        // ====== 画面遷移（URLのハッシュで管理） ======
         function goToBook(id) {
             location.hash = 'book-' + id;
         }
@@ -378,7 +395,6 @@
             }
         }
 
-        // 実際に保存を始める小さな関数（<a download> をクリックするだけ）
         function saveWithLink(href, filename) {
             const a = document.createElement('a');
             a.href = href;
@@ -389,15 +405,12 @@
             a.remove();
         }
 
-        // ファイルを読み込んで「保存用データ」に変えてから保存する。
-        // こうすると、txt がブラウザ上に表示されてしまうのを防げます。
-        // ※ この関数はファイル内にこの1つだけ。同じ名前の関数を別の場所に書かないでください。
+        // 保存処理はこの1つだけ。ファイルを読み込み、保存用データにしてから保存します。
         async function triggerFileDownload(book) {
-            // ファイル未設定のときは、タイトル入りのテキストを生成して保存
+            // file が空のときは、タイトル入りの仮テキストを生成して保存
             if (!book.file) {
-                const body = `${book.title}\n江戸川乱歩\n\n※ このファイルは仮のデータです。本文ファイルを用意して booksData の file に指定してください。\n`;
-                const blob = new Blob(['\ufeff' + body], { type: 'text/plain;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
+                const body = `${book.title}\n江戸川乱歩\n\n※ このファイルは仮のデータです。\n`;
+                const url = URL.createObjectURL(new Blob(['\ufeff' + body], { type: 'text/plain;charset=utf-8' }));
                 saveWithLink(url, `${book.title}.txt`);
                 setTimeout(() => URL.revokeObjectURL(url), 1000);
                 return;
@@ -406,25 +419,22 @@
             const ext = (book.file.split('.').pop() || 'txt').toLowerCase();
             const filename = `${book.title}.${ext}`;
 
-            let blob = null;
+            let blob;
             try {
-                const res = await fetch(book.file);
-                if (!res.ok) {
-                    // サーバー上にファイルが無い（404など）
-                    throw new Error('file not found: ' + res.status);
-                }
+                const res = await fetch(book.file, { cache: 'no-store' });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
                 blob = await res.blob();
             } catch (e) {
-                // http(s) で開いているのに取得できない＝ファイルが無い・パスが違う
-                if (location.protocol.startsWith('http')) throw e;
-                // HTMLを直接開いている（file://）場合は fetch が使えないので、通常のリンクで保存を試す
-                saveWithLink(book.file, filename);
-                return;
+                // HTMLファイルを直接開いている（file://）場合は読み込めないので、通常のリンクで保存を試す
+                if (!location.protocol.startsWith('http')) {
+                    saveWithLink(book.file, filename);
+                    return;
+                }
+                throw e; // 公開先でファイルが無い場合はエラーにする
             }
 
-            // 種類を「ダウンロード用」に固定して、表示ではなく保存にさせる
-            const forced = new Blob([blob], { type: 'application/octet-stream' });
-            const url = URL.createObjectURL(forced);
+            // 種類を固定して「表示」ではなく「保存」にさせる
+            const url = URL.createObjectURL(new Blob([blob], { type: 'application/octet-stream' }));
             saveWithLink(url, filename);
             setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
@@ -436,9 +446,10 @@
             try {
                 await triggerFileDownload(book);
             } catch (e) {
-                console.error(e);
-                showToast(`「${book.title}」のファイルが見つかりません`, 'fa-circle-exclamation', false);
-                return; // 失敗したときは履歴に残さない
+                console.error('ダウンロード失敗:', absUrl(book.file), e);
+                showToast(`ファイルが見つかりません：${book.file}`, 'fa-circle-exclamation', false);
+                checkFiles(); // 足りないファイルを上の赤い帯に表示
+                return;       // 失敗したときは履歴に残さない
             }
 
             const date = new Date().toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
@@ -540,7 +551,7 @@
             document.getElementById('toast-icon').className = `fa-solid ${iconClass} ${color} text-xl`;
             toast.classList.remove('opacity-0', 'pointer-events-none');
             clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => toast.classList.add('opacity-0', 'pointer-events-none'), 3000);
+            toastTimer = setTimeout(() => toast.classList.add('opacity-0', 'pointer-events-none'), 4000);
         }
 
         // ====== ハンバーガーメニュー ======
@@ -569,7 +580,6 @@
             openModal(type);
         }
 
-        // PC幅になったらメニューを閉じる
         window.matchMedia('(min-width: 768px)').addEventListener('change', e => { if (e.matches) closeMenu(); });
 
         // ====== 初期化 ======
@@ -577,6 +587,7 @@
             renderHome();
             updateBadges();
             route();
+            checkFiles();
         });
         window.addEventListener('hashchange', route);
     </script>
